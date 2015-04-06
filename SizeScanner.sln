@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScannerConsole", "ScannerConsole\ScannerConsole.csproj", "{AA1265B6-24C4-4C0C-A518-BDA0EDEDC423}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScannerCore", "ScannerCore\ScannerCore.csproj", "{6D859228-A706-4AE9-B394-078522AA4DE5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScannerUI", "ScannerUI\ScannerUI.csproj", "{AE0D1411-3B24-418F-BC70-079B022BC7C7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScannerUiWinForms", "ScannerUiWinForms\ScannerUiWinForms.csproj", "{006ECCAD-8E68-426E-B491-3FEF1B48B46B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AA1265B6-24C4-4C0C-A518-BDA0EDEDC423}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA1265B6-24C4-4C0C-A518-BDA0EDEDC423}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA1265B6-24C4-4C0C-A518-BDA0EDEDC423}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA1265B6-24C4-4C0C-A518-BDA0EDEDC423}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D859228-A706-4AE9-B394-078522AA4DE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D859228-A706-4AE9-B394-078522AA4DE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D859228-A706-4AE9-B394-078522AA4DE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D859228-A706-4AE9-B394-078522AA4DE5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE0D1411-3B24-418F-BC70-079B022BC7C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE0D1411-3B24-418F-BC70-079B022BC7C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE0D1411-3B24-418F-BC70-079B022BC7C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE0D1411-3B24-418F-BC70-079B022BC7C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{006ECCAD-8E68-426E-B491-3FEF1B48B46B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{006ECCAD-8E68-426E-B491-3FEF1B48B46B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{006ECCAD-8E68-426E-B491-3FEF1B48B46B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{006ECCAD-8E68-426E-B491-3FEF1B48B46B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
