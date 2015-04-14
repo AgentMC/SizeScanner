@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -27,7 +28,8 @@ namespace ScannerUiWinForms
             foreach (var driveInfo in DriveInfo.GetDrives().Where(d => d.IsReady))
             {
                 toolStrip1.Items.Insert(toolStrip1.Items.Count - staticItems,
-                                        new ToolStripButton(driveInfo.Name, null, (o, ea) => LoadDrive((ToolStripItem) o)));
+                                        new ToolStripButton(driveInfo.Name, null,
+                                                            (o, ea) => LoadDrive((ToolStripItem) o)));
             }
             toolStripComboBox1.SelectedIndex = 1;
             toolStripComboBox2.SelectedIndex = 4;
@@ -36,7 +38,6 @@ namespace ScannerUiWinForms
         private async void LoadDrive(ToolStripItem sender)
         {
             var target = sender.Text.Substring(0, 2);
-            chart1.Focus();
             _scanner = new DriveScanner();
 
             toolStrip1.Enabled = false;
@@ -184,7 +185,7 @@ namespace ScannerUiWinForms
             return true;
         }
 
-        private static readonly FsItem Empty = new FsItem(null, 0, false){Items = new List<FsItem>()};
+        private static readonly FsItem Empty = new FsItem(null, 0, false) {Items = new List<FsItem>()};
         private const string PlaceholderTag = "Placeholder";
 
         private void AlignDoughnuts()
@@ -196,61 +197,72 @@ namespace ScannerUiWinForms
                 {
                     chart1.Series.RemoveAt(i);
                 }
-            }   
+            }
             var singleWidth = 85.0/chart1.Series.Count;
             for (int i = 0; i < chart1.Series.Count; i++)
             {
-                chart1.Series[i].CustomProperties = "PieStartAngle=270, DoughnutRadius=" + (int)(85 - singleWidth*i);
+                chart1.Series[i].CustomProperties = "PieStartAngle=270, DoughnutRadius=" + (int) (85 - singleWidth*i);
             }
         }
 
         private Point _last;
-        private HitTestResult[] _lastHash;
+        private HitTestResult[] _lastObjects;
         private string _lastTip;
+
         private void chart1_MouseMove(object sender, MouseEventArgs e)
         {
-            if(_last == e.Location) return;
+            if (_last == e.Location) return;
             _last = e.Location;
 
+            contextMenuStrip1.Hide();
             var objectUnder = chart1.HitTest(e.X, e.Y, true, ChartElementType.DataPoint);
             if (objectUnder.Length > 0)
             {
                 if (!CompareCollections(objectUnder))
                 {
-                    _lastHash = objectUnder;
-                    var emumeration =
-                        objectUnder.Where(o => o.Object != null && o.ChartElementType == ChartElementType.DataPoint)
-                                   .Select(o => ((DataPoint) o.Object).Tag as FsItem)
-                                   .Where(t => t != null)
-                                   .Select(t => string.Format("{0}: {1}", t.Name, Humanize.FsItem(t)))
-                                   .ToArray();
-                    var list = new List<string>();
-                    var builder = new StringBuilder();
-                    for (int j = 0; j < emumeration.Length; j++)
-                    {
-                        for (int i = j; i < emumeration.Length - 1; i++)
-                        {
-                            builder.Append(">");
-                        }
-                        builder.Append(emumeration[j]);
-                        list.Add(builder.ToString());
-                        builder.Clear();
-                    }
-                    _lastTip = string.Join("\r\n", list);
+                    _lastObjects = objectUnder;
+                    BuildToolTipText();
                 }
                 toolTip1.Show(_lastTip, chart1, e.X + 16, e.Y + 16);
             }
         }
 
-        private  bool CompareCollections(HitTestResult[] result)
+        private void BuildToolTipText()
         {
-            if ((_lastHash == null ^ result == null) || result == null)
+            var fsItems = GetFsItemsArray();
+            var list = new List<string>();
+            var builder = new StringBuilder();
+            for (int j = 0; j < fsItems.Length; j++)
+            {
+                for (int i = j; i < fsItems.Length - 1; i++)
+                {
+                    builder.Append(">");
+                }
+                var fsItem = fsItems[j];
+                builder.AppendFormat("{0}: {1}", fsItem.Name, Humanize.FsItem(fsItem));
+                list.Add(builder.ToString());
+                builder.Clear();
+            }
+            _lastTip = string.Join("\r\n", list);
+        }
+
+        private FsItem[] GetFsItemsArray()
+        {
+            return _lastObjects.Where(o => o.Object != null && o.ChartElementType == ChartElementType.DataPoint)
+                               .Select(o => ((DataPoint) o.Object).Tag as FsItem)
+                               .Where(t => t != null)
+                               .ToArray();
+        }
+
+        private bool CompareCollections(HitTestResult[] result)
+        {
+            if ((_lastObjects == null ^ result == null) || result == null)
                 return false;
-            if (_lastHash.Length != result.Length)
+            if (_lastObjects.Length != result.Length)
                 return false;
             for (int i = 0; i < result.Length; i++)
             {
-                if (_lastHash[i].Object != result[i].Object)
+                if (_lastObjects[i].Object != result[i].Object)
                     return false;
             }
             return true;
@@ -259,6 +271,88 @@ namespace ScannerUiWinForms
         private void toolStripButton1_Click(object sender, EventArgs e)
         {
             splitContainer1.Panel2Collapsed ^= true;
+        }
+
+        private void contextMenuStrip1_Opened(object sender, EventArgs e)
+        {
+            var cached = GetFsItemsArray();
+            if (cached.Length == 0)
+            {
+                contextMenuStrip1.Enabled = false;
+                return;
+            }
+
+            contextMenuStrip1.Enabled = true;
+            var builder = new StringBuilder(_scanner.CurrentTarget);
+            for (int i = cached.Length - 1; i >= 0; i--)
+            {
+                builder.Append(Path.DirectorySeparatorChar);
+                builder.Append(cached[i].Name);
+            }
+            contextMenuStrip1.Tag = builder.ToString();
+            builder.AppendFormat("{0}{1}; {2}{0}(hover this tooltip to return back to search mode)",
+                                 Environment.NewLine,
+                                 cached[0].IsDir ? "Folder" : "File",
+                                 Humanize.FsItem(cached[0]));
+            toolTip1.Show(builder.ToString(),
+                          chart1,
+                          chart1.PointToClient(new Point(contextMenuStrip1.Left, contextMenuStrip1.Top - 52)));
+        }
+
+        private void openToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            StartExplorerSelect((string)contextMenuStrip1.Tag);
+        }
+
+        public static void StartExplorerSelect(string objectToSelect)
+        {
+            StartExplorer("/select,\"" + objectToSelect + "\"");
+        }
+
+        public static void StartExplorer(string command = null)
+        {
+            const string explorerString = "explorer.exe";
+            Process.Start(explorerString, command);
+        }
+
+        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var path = (string) contextMenuStrip1.Tag;
+            int i = 0;
+            if (File.Exists(path))
+            {
+                i = 1;
+            }
+            else if (Directory.Exists(path))
+            {
+                i = 2;
+            }
+            if (i == 0)
+            {
+                MessageBox.Show("Object is already unavailable.");
+                return;
+            }
+            if (
+                MessageBox.Show("Are you sure you want to delete " + path, "Confirm operation", MessageBoxButtons.YesNo) ==
+                DialogResult.No)
+            {
+                return;
+            }
+            try
+            {
+                if (i == 1)
+                {
+                    File.Delete(path);
+                }
+                else
+                {
+                    Directory.Delete(path, true);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error occurred: " + ex);
+            }
         }
     }
 }

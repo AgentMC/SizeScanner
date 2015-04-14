@@ -19,6 +19,8 @@ namespace ScannerCore
             get { return _problematic.ToArray(); }
         }
 
+        public string CurrentTarget { get; private set; }
+
         public long GetDisplayThreshold(Single percent, bool includeFreeSpace)
         {
             return (long) (percent*(includeFreeSpace ? _total : _occupied));
@@ -28,6 +30,7 @@ namespace ScannerCore
         {
             _total = 0;
             _problematic.Clear();
+            CurrentTarget = driveName;
 
             var drive = new DriveInfo(driveName);
             _occupied = drive.TotalSize - drive.TotalFreeSpace;
