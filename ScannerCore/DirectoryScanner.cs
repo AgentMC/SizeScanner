@@ -44,6 +44,8 @@ namespace ScannerCore
             internal UIntPtr Information;
         }
 
+        const Int32 FDI_FileName_FieldSize = 2;
+
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode, Pack = 1)]
         internal class FILE_DIRECTORY_INFORMATION
         {
@@ -57,8 +59,10 @@ namespace ScannerCore
             internal LARGE_INTEGER AllocationSize;
             internal CreateFileOptions FileAttributes;
             internal UInt32 FileNameLength;
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)] internal Byte[] FileName;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = FDI_FileName_FieldSize)] internal Byte[] FileName;
         }
+
+        static readonly int FileNameOffset = Marshal.SizeOf(typeof(FILE_DIRECTORY_INFORMATION)) - FDI_FileName_FieldSize;
 
         [Flags]
         public enum FileAccessRights : uint
@@ -384,18 +388,19 @@ namespace ScannerCore
         private static void CheckData(IntPtr dataPtr, List<FsItem> items, ref long processed)
         {
             var info = new FILE_DIRECTORY_INFORMATION();
-            var structSize = Marshal.SizeOf(info);
             do
             {
                 Marshal.PtrToStructure(dataPtr, info);
                 if ((info.FileAttributes & CreateFileOptions.FILE_ATTRIBUTE_REPARSE_POINT) == 0 //not symlink
                     || (info.FileAttributes & CreateFileOptions.FILE_ATTRIBUTE_OFFLINE) != 0) //or symlink to offline file
                 {
-                    var name = Marshal.PtrToStringUni(dataPtr + structSize - 2, (int) info.FileNameLength/2);
-                    items.Add(new FsItem(name,
-                                         info.AllocationSize.QuadPart,
-                                         (info.FileAttributes & CreateFileOptions.FILE_ATTRIBUTE_DIRECTORY) > 0));
-                    processed += info.AllocationSize.QuadPart;
+                    var name = Marshal.PtrToStringUni(dataPtr + FileNameOffset, (int) info.FileNameLength/2);
+                    var isDir = (info.FileAttributes & CreateFileOptions.FILE_ATTRIBUTE_DIRECTORY) > 0;
+                    if (!(isDir && ((name.Length == 1 && name[0] == '.') || (name.Length == 2 && name[0] == '.' && name[1] == '.')))) //not "." or ".." pseudo-directories
+                    {
+                        items.Add(new FsItem(name, info.AllocationSize.QuadPart, isDir));
+                        processed += info.AllocationSize.QuadPart;
+                    }
                 }
                 dataPtr += (int) info.NextEntryOffset;
             } while (info.NextEntryOffset != 0);

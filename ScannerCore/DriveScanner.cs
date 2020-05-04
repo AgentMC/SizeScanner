@@ -9,9 +9,9 @@ namespace ScannerCore
         private long _total, _occupied;
         private readonly List<string> _problematic = new List<string>();
 
-        public Single Progress
+        public float Progress
         {
-            get { return _occupied == 0 ? 0 : _total*(Single) 100/_occupied; }
+            get { return _occupied == 0 ? 0 : _total*(float) 100/_occupied; }
         }
 
         public string[] Inaccessible
@@ -21,7 +21,9 @@ namespace ScannerCore
 
         public string CurrentTarget { get; private set; }
 
-        public long GetDisplayThreshold(Single percent, bool includeFreeSpace)
+        public string CurrentScanned { get; private set; }
+
+        public long GetDisplayThreshold(float percent, bool includeFreeSpace)
         {
             return (long) (percent*(includeFreeSpace ? _total : _occupied));
         }
@@ -47,22 +49,20 @@ namespace ScannerCore
 
         private void ScanChildren(FsItem item, string parentPath)
         {
-            var pp = parentPath + item.Name + "\\";
-            item.Items = DirectoryScanner.Scan(pp, ref _total);
+            var scanObject = parentPath + item.Name + "\\";
+            CurrentScanned = scanObject;
+            item.Items = DirectoryScanner.Scan(scanObject, ref _total);
             if (item.Items == null)
             {
-                _problematic.Add(pp);
+                _problematic.Add(scanObject);
                 return; //Access to directory denied
             }
-            for (var i = item.Items.Count - 1; i >= (parentPath == null ? 0 : 2); i--)
+            for (var i = item.Items.Count - 1; i >= 0; i--)
             {
                 var child = item.Items[i];
-                if (child.IsDir) ScanChildren(child, pp);
+                if (child.IsDir) ScanChildren(child, scanObject);
                 item.Size += child.Size;
             }
-            if (parentPath != null) //in case not drive root
-                item.Items.RemoveRange(0, 2); //removing "." & ".."
         }
-
     }
 }

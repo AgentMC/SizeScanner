@@ -72,12 +72,14 @@ namespace ScannerUiWinForms
 
             timer1.Stop();
             toolStripProgressBar1.Value = 0;
+            toolStripLabel2.Text = string.Empty;
             toolStrip1.Enabled = true;
         }
 
         private void timer1_Tick(object sender, EventArgs e)
         {
             toolStripProgressBar1.Value = Math.Min((int) (_scanner.Progress*10), toolStripProgressBar1.Maximum);
+            toolStripLabel2.Text = _scanner.CurrentScanned;
         }
 
         private readonly Dictionary<Series, long> _totals = new Dictionary<Series, long>();
@@ -223,7 +225,7 @@ namespace ScannerUiWinForms
                     _lastObjects = objectUnder;
                     BuildToolTipText();
                 }
-                toolTip1.Show(_lastTip, chart1, e.X + 16, e.Y + 16);
+                toolTip1.Show(_lastTip, chart1, e.X + 64, e.Y +64);
             }
         }
 
