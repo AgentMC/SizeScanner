@@ -33,7 +33,10 @@ namespace ScannerUiWinForms
             }
             toolStripComboBox1.SelectedIndex = 1;
             toolStripComboBox2.SelectedIndex = 4;
+            splitContainer1.SplitterDistance = splitContainer1.Width - LogicalToDeviceUnits(splitContainer1.Width - splitContainer1.SplitterDistance);
         }
+
+        
 
         private async void LoadDrive(ToolStripItem sender)
         {
@@ -225,7 +228,7 @@ namespace ScannerUiWinForms
                     _lastObjects = objectUnder;
                     BuildToolTipText();
                 }
-                toolTip1.Show(_lastTip, chart1, e.X + 64, e.Y +64);
+                toolTip1.Show(_lastTip, chart1, e.X + LogicalToDeviceUnits(SystemInformation.CursorSize.Width), e.Y + LogicalToDeviceUnits(SystemInformation.CursorSize.Height));
             }
         }
 
@@ -298,7 +301,7 @@ namespace ScannerUiWinForms
                                  Humanize.FsItem(cached[0]));
             toolTip1.Show(builder.ToString(),
                           chart1,
-                          chart1.PointToClient(new Point(contextMenuStrip1.Left, contextMenuStrip1.Top - 52)));
+                          chart1.PointToClient(new Point(contextMenuStrip1.Left, contextMenuStrip1.Top - LogicalToDeviceUnits(52 + (int)Math.Ceiling(DeviceDpi/96.0)))));
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
