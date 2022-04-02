@@ -46,7 +46,7 @@ namespace ScannerUiWinForms
             toolStrip1.Enabled = false;
             timer1.Start();
 
-            var root = await Task.Run(() => _scanner.Scan(target));
+            var root = await Task.Run(() => _scanner.ScanDrive(target));
 
             listBox1.Items.Clear();
             listBox1.Items.AddRange(_scanner.Inaccessible.Cast<object>().ToArray());

@@ -37,7 +37,7 @@ namespace ScannerUI
 
             await Task.Run(() =>
             {
-                App.Current.Context.StatisticsRoot = _scanner.Scan(info.Name.Substring(0, 2));
+                App.Current.Context.StatisticsRoot = _scanner.ScanDrive(info.Name.Substring(0, 2));
                 App.Current.Context.Problematic.Clear();
                 App.Current.Context.Problematic.AddRange(_scanner.Inaccessible);
             });
