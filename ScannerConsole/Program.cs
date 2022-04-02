@@ -11,14 +11,17 @@ namespace ScannerConsole
             var scanner = new DriveScanner();
             FsItem root;
 
-            var worker = new Thread(() => root = scanner.ScanDrive("C:"));
+            var worker = new Thread(() => root = scanner.ScanDirectory("Z:\\Backup\\Mike"));
+            var s = System.Diagnostics.Stopwatch.StartNew();
             worker.Start();
 
             while (worker.IsAlive)
             {
-                Console.WriteLine("{0:F}% done", scanner.Progress);
+                Console.WriteLine($"Current: {scanner.CurrentScanned}");
                 Thread.Sleep(100);
             }
+            s.Stop();
+            Console.WriteLine($"Elapsed: {s.ElapsedMilliseconds / 1000.0} seconds.");
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey();
         }
