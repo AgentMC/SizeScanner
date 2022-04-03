@@ -8,7 +8,7 @@ using Microsoft.Win32.SafeHandles;
 
 namespace ScannerCore
 {
-    public static class DirectoryScanner
+    public class DirectoryScanner
     {
         private const int FileDirectoryInformation = 1;
         private const uint StatusSuccess = 0x00000000;
@@ -62,7 +62,7 @@ namespace ScannerCore
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = FDI_FileName_FieldSize)] internal Byte[] FileName;
         }
 
-        static readonly int FileNameOffset = Marshal.SizeOf(typeof(FILE_DIRECTORY_INFORMATION)) - FDI_FileName_FieldSize;
+        readonly int FileNameOffset = Marshal.SizeOf(typeof(FILE_DIRECTORY_INFORMATION)) - FDI_FileName_FieldSize;
 
         [Flags]
         public enum FileAccessRights : uint
@@ -330,9 +330,9 @@ namespace ScannerCore
 
         #endregion
 
-        private static readonly IntPtr buffer = Marshal.AllocHGlobal(1024 * 1024);
+        private readonly IntPtr buffer = Marshal.AllocHGlobal(1024 * 1024);
 
-        public static List<FsItem> Scan(string dir, ref long processed)
+        public List<FsItem> Scan(string dir, ref long processed)
         {
 
             var hFolder = NativeMethods.CreateFile(dir,
@@ -385,7 +385,7 @@ namespace ScannerCore
             return res;
         }
 
-        private static void CheckData(IntPtr dataPtr, List<FsItem> items, ref long processed)
+        private void CheckData(IntPtr dataPtr, List<FsItem> items, ref long processed)
         {
             var info = new FILE_DIRECTORY_INFORMATION();
             do

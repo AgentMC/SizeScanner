@@ -8,6 +8,7 @@ namespace ScannerCore
     {
         private long _total, _occupied;
         private readonly List<string> _problematic = new List<string>();
+        private DirectoryScanner _scanner;
 
         public float Progress
         {
@@ -48,6 +49,7 @@ namespace ScannerCore
             _problematic.Clear();
             CurrentTarget = path;
             var root = new FsItem(path, 0, true);
+            _scanner = new DirectoryScanner();
             ScanChildren(root);
             return root;
         }
@@ -60,7 +62,7 @@ namespace ScannerCore
             if (!scanObject.EndsWith("\\")) scanObject += "\\";
 
             CurrentScanned = scanObject;
-            item.Items = DirectoryScanner.Scan(scanObject, ref _total);
+            item.Items = _scanner.Scan(scanObject, ref _total);
             if (item.Items == null)
             {
                 _problematic.Add(scanObject);
