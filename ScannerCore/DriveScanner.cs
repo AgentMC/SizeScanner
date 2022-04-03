@@ -61,7 +61,7 @@ namespace ScannerCore
         private void ScanChildren(FsItem item, string parentPath)
         {
             var scanObject = parentPath + item.Name;
-            if (!scanObject.EndsWith("\\")) scanObject += "\\";
+            if (scanObject[scanObject.Length-1] != Path.DirectorySeparatorChar) scanObject += Path.DirectorySeparatorChar;
 
             CurrentScanned = scanObject;
             item.Items = _scanner.Scan(scanObject, ref _total);
