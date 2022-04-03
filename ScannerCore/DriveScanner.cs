@@ -29,12 +29,23 @@ namespace ScannerCore
             return (long) (percent*(includeFreeSpace ? _total : _occupied));
         }
 
+        private FsItem ScanUnitInternal(string location, bool useAllocationSize)
+        {
+            _total = 0;
+            _problematic.Clear();
+            CurrentTarget = location;
+            var root = new FsItem(location, 0, true);
+            _scanner = new DirectoryScanner(useAllocationSize);
+            ScanChildren(root);
+            return root;
+        }
+
         public FsItem ScanDrive(string driveName) //C:
         {
             var drive = new DriveInfo(driveName);
             _occupied = drive.TotalSize - drive.TotalFreeSpace;
 
-            var root = ScanDirectory(driveName);
+            var root = ScanUnitInternal(driveName, true);
             root.Items.InsertRange(0, new[]
             {
                 new FsItem("[Free space]", drive.TotalFreeSpace, false),
@@ -43,16 +54,7 @@ namespace ScannerCore
             return root;
         }
 
-        public FsItem ScanDirectory(string path)
-        {
-            _total = 0;
-            _problematic.Clear();
-            CurrentTarget = path;
-            var root = new FsItem(path, 0, true);
-            _scanner = new DirectoryScanner();
-            ScanChildren(root);
-            return root;
-        }
+        public FsItem ScanDirectory(string path) => ScanUnitInternal(path, false);
 
         private void ScanChildren(FsItem item) => ScanChildren(item, null);
 

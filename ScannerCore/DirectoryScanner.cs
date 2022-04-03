@@ -331,6 +331,12 @@ namespace ScannerCore
         #endregion
 
         private readonly IntPtr buffer = Marshal.AllocHGlobal(1024 * 1024);
+        private readonly bool PreferAllocatedSize;
+
+        public DirectoryScanner(bool preferAllocatedSize)
+        {
+            PreferAllocatedSize = preferAllocatedSize;
+        }
 
         public List<FsItem> Scan(string dir, ref long processed)
         {
@@ -398,7 +404,7 @@ namespace ScannerCore
                     var isDir = (info.FileAttributes & CreateFileOptions.FILE_ATTRIBUTE_DIRECTORY) > 0;
                     if (!(isDir && ((name.Length == 1 && name[0] == '.') || (name.Length == 2 && name[0] == '.' && name[1] == '.')))) //not "." or ".." pseudo-directories
                     {
-                        items.Add(new FsItem(name, info.AllocationSize.QuadPart, isDir, info.LastWriteTime.QuadPart));
+                        items.Add(new FsItem(name, PreferAllocatedSize ? info.AllocationSize.QuadPart : info.EndOfFile.QuadPart, isDir, info.LastWriteTime.QuadPart));
                         processed += info.AllocationSize.QuadPart;
                     }
                 }
