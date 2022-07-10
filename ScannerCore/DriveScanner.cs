@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 namespace ScannerCore
 {
@@ -29,23 +30,12 @@ namespace ScannerCore
             return (long) (percent*(includeFreeSpace ? _total : _occupied));
         }
 
-        private FsItem ScanUnitInternal(string location, bool useAllocationSize)
-        {
-            _total = 0;
-            _problematic.Clear();
-            CurrentTarget = location;
-            var root = new FsItem(location, 0, true);
-            _scanner = new DirectoryScanner(useAllocationSize);
-            ScanChildren(root);
-            return root;
-        }
-
         public FsItem ScanDrive(string driveName) //C:
         {
             var drive = new DriveInfo(driveName);
             _occupied = drive.TotalSize - drive.TotalFreeSpace;
 
-            var root = ScanUnitInternal(driveName, true);
+            var root = ScanUnitInternal(driveName, true, CancellationToken.None);
             root.Items.InsertRange(0, new[]
             {
                 new FsItem("[Free space]", drive.TotalFreeSpace, false),
@@ -54,12 +44,25 @@ namespace ScannerCore
             return root;
         }
 
-        public FsItem ScanDirectory(string path) => ScanUnitInternal(path, false);
+        public FsItem ScanDirectory(string path, CancellationToken run) => ScanUnitInternal(path, false, run);
 
-        private void ScanChildren(FsItem item) => ScanChildren(item, null);
-
-        private void ScanChildren(FsItem item, string parentPath)
+        private FsItem ScanUnitInternal(string location, bool useAllocationSize, CancellationToken run)
         {
+            _total = 0;
+            _problematic.Clear();
+            CurrentTarget = location;
+            var root = new FsItem(location, 0, true);
+            _scanner = new DirectoryScanner(useAllocationSize);
+            ScanChildren(root, run);
+            return root;
+        }
+
+        private void ScanChildren(FsItem item, CancellationToken run) => ScanChildren(item, null, run);
+
+        private void ScanChildren(FsItem item, string parentPath, CancellationToken run)
+        {
+            if (run.IsCancellationRequested) return;
+
             var scanObject = parentPath + item.Name;
             if (scanObject[scanObject.Length-1] != Path.DirectorySeparatorChar) scanObject += Path.DirectorySeparatorChar;
 
@@ -73,7 +76,7 @@ namespace ScannerCore
             for (var i = item.Items.Count - 1; i >= 0; i--)
             {
                 var child = item.Items[i];
-                if (child.IsDir) ScanChildren(child, scanObject);
+                if (child.IsDir) ScanChildren(child, scanObject, run);
                 item.Size += child.Size;
             }
         }

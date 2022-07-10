@@ -404,8 +404,9 @@ namespace ScannerCore
                     var isDir = (info.FileAttributes & CreateFileOptions.FILE_ATTRIBUTE_DIRECTORY) > 0;
                     if (!(isDir && ((name.Length == 1 && name[0] == '.') || (name.Length == 2 && name[0] == '.' && name[1] == '.')))) //not "." or ".." pseudo-directories
                     {
-                        items.Add(new FsItem(name, PreferAllocatedSize ? info.AllocationSize.QuadPart : info.EndOfFile.QuadPart, isDir, info.LastWriteTime.QuadPart));
-                        processed += info.AllocationSize.QuadPart;
+                        long size = PreferAllocatedSize ? info.AllocationSize.QuadPart : info.EndOfFile.QuadPart;
+                        items.Add(new FsItem(name, size, isDir, info.LastWriteTime.QuadPart));
+                        processed += size;
                     }
                 }
                 dataPtr += (int) info.NextEntryOffset;
