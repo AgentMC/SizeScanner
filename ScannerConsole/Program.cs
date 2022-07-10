@@ -11,7 +11,7 @@ namespace ScannerConsole
             var scanner = new DriveScanner();
             FsItem root;
 
-            var worker = new Thread(() => root = scanner.ScanDirectory("Z:\\Backup\\Mike"));
+            var worker = new Thread(() => root = scanner.ScanDirectory("Z:\\Backup\\Mike", CancellationToken.None));
             var s = System.Diagnostics.Stopwatch.StartNew();
             worker.Start();
 

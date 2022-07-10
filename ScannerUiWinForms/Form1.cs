@@ -17,10 +17,16 @@ namespace ScannerUiWinForms
         public Form1()
         {
             InitializeComponent();
+            using (var reg = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(@"Control Panel\Cursors"))
+            {
+                _cursorSize = (int)reg.GetValue("CursorBaseSize");
+            }
+            
         }
 
         private DriveScanner _scanner;
         private long _filterThreshold;
+        private readonly int _cursorSize;
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -228,7 +234,8 @@ namespace ScannerUiWinForms
                     _lastObjects = objectUnder;
                     BuildToolTipText();
                 }
-                toolTip1.Show(_lastTip, chart1, e.X + LogicalToDeviceUnits(SystemInformation.CursorSize.Width), e.Y + LogicalToDeviceUnits(SystemInformation.CursorSize.Height));
+                var offset = LogicalToDeviceUnits(_cursorSize/2);
+                toolTip1.Show(_lastTip, chart1, (int)(e.X + offset*0.75), e.Y + offset);
             }
         }
 
