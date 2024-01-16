@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
+using Microsoft.Win32;
 using ScannerCore;
 
 namespace ScannerUiWinForms
@@ -17,9 +18,19 @@ namespace ScannerUiWinForms
         public Form1()
         {
             InitializeComponent();
-            using (var reg = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(@"Control Panel\Cursors"))
+            RegistryKey reg = null;
+            try
             {
-                _cursorSize = (int)reg.GetValue("CursorBaseSize");
+                reg = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(@"Control Panel\Cursors");
+                _cursorSize = reg !=null ? (int)reg.GetValue("CursorBaseSize") : 48;
+            }
+            catch
+            {
+                _cursorSize = 48;
+            }
+            finally
+            {
+                reg?.Dispose();
             }
             
         }
