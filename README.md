@@ -9,8 +9,9 @@ Differences from Scanner2:
   * Allows fine tuning the layout
   * Scans drives only when told to do so
 
-Alpha state.
-Console only for testing. WPF - not implemented chart control. WinForms - core functions work.
+Functionality is limited but it does all that's necessary.
+Console only for testing. 
+WinForms - core functions work. Includes quick navigation and from-app delete shortcuts.
 
-Context menus, FS actions - all planned.
+
 ![](https://raw.githubusercontent.com/AgentMC/SizeScanner/master/Img/SSSS01.png)
